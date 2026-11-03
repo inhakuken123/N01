@@ -250,6 +250,13 @@ accounts.json                账号
 
 ---
 
+## 制作人
+
+| 角色 | 名字 |
+| --- | --- |
+| 开发 | [@YOUR_NAME](https://github.com/YOUR_NAME) |
+| 共同开发 | [@同学的GitHub用户名](https://github.com/同学的GitHub用户名) |
+
 ## 参与贡献
 
 欢迎 Issue 和 PR。提交 PR 前请看一眼 [CONTRIBUTING.md](CONTRIBUTING.md)。

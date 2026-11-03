@@ -226,6 +226,13 @@ accounts.json                Accounts
 - No voice (wire up your own ASR/TTS)
 - Memory is character-based, so the persona dilutes over long conversations
 
+## Credits
+
+| Role | Name |
+| --- | --- |
+| Developer | [@YOUR_NAME](https://github.com/YOUR_NAME) |
+| Co-developer | [@YOUR_CLASSMATE](https://github.com/YOUR_CLASSMATE) |
+
 ## Contributing
 
 Issues and PRs are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) first.
