@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  简体中文 | <a href="README_EN.md">English</a>
+  简体中文 | <a href="README_EN.md">English</a> | <a href="CHANGELOG.md">更新日志</a>
 </p>
 
 ---
