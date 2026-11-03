@@ -1,0 +1,9 @@
+{
+  "appid": "",
+  "secret": "",
+  "api_base": "https://api.bot.qq.com",
+  "forward_url": "http://127.0.0.1:8765/api/bot/chat",
+  "bot_token": "",
+  "intents": 33554432,
+  "group_reply": false
+}

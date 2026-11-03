@@ -1,0 +1,37 @@
+# 运行数据 —— 聊天记录、图片、视频、位置缓存，全在本机，不进仓库
+data/
+
+# 账号（含密码哈希和 openid）
+accounts.json
+
+# QQ 机器人的运行状态（去重用的消息 id）
+qqbot/state.json
+
+# 密钥
+api.txt
+*.key
+
+# 打包产物
+build/
+dist/
+*.spec
+
+# 编辑器 / 系统
+__pycache__/
+*.pyc
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# 私人人设（如果你把真正的角色文件放在这里，别提交）
+persona.md
+
+# 本地配置（含 API key / AppSecret，公开仓库绝对不能提交）
+config.json
+qqbot/config.json
+.env
+
+# 虚拟环境
+.venv/
+venv/

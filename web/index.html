@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI 伴侣</title>
+<style>
+  :root{
+    --bg:#f2f9fb; --bg2:#e6f3f7;
+    --ink:#20313a; --ink-soft:#5c757f; --muted:#9ab2bb;
+    --line:#dbe9ee; --accent:#5cbfd8; --accent-deep:#2f96b3;
+    --bubble:#fff; --mine:#dff1f7; --danger:#c0655f;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; color:var(--ink); font-size:15px; line-height:1.75;
+    font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    background:
+      radial-gradient(900px 520px at 50% -12%, #fff 0%, rgba(255,255,255,0) 62%),
+      radial-gradient(700px 420px at 12% 108%, var(--bg2) 0%, rgba(230,243,247,0) 60%),
+      var(--bg);
+    -webkit-font-smoothing:antialiased;
+    display:flex; justify-content:center;
+  }
+  .hidden{display:none !important}
+
+  /* ---------------- 登录 ---------------- */
+  .login-wrap{width:100%;height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+  .card{
+    width:100%; max-width:340px; background:#fff; border:1px solid var(--line);
+    border-radius:18px; padding:34px 28px 26px;
+    box-shadow:0 1px 2px rgba(32,49,58,.03), 0 30px 60px -40px rgba(32,49,58,.35);
+  }
+  .brand{display:flex;align-items:center;gap:9px;margin-bottom:22px}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);
+       box-shadow:0 0 0 4px rgba(92,191,216,.16);animation:breath 3.6s ease-in-out infinite}
+  @keyframes breath{0%,100%{opacity:.45}50%{opacity:1}}
+  .brand b{font-size:15px;letter-spacing:.22em;font-weight:600}
+  .brand span{font-size:11px;color:var(--muted);letter-spacing:.14em;margin-left:auto}
+
+  label{display:block;font-size:11px;letter-spacing:.14em;color:var(--muted);margin:0 0 6px 2px}
+  input[type=text],input[type=password],select{
+    width:100%; border:1px solid var(--line); background:#fbfdfe; border-radius:11px;
+    padding:11px 13px; font:inherit; color:var(--ink); outline:none; margin-bottom:15px;
+    transition:border-color .18s, box-shadow .18s;
+  }
+  input::placeholder{color:#b9ccd4}
+  input:focus,select:focus{border-color:var(--accent); box-shadow:0 0 0 3px rgba(92,191,216,.14); background:#fff}
+  .btn{
+    width:100%; border:none; background:var(--accent-deep); color:#fff; font:inherit;
+    height:44px; border-radius:11px; cursor:pointer; letter-spacing:.1em;
+    transition:background .18s, transform .1s;
+  }
+  .btn:hover{background:#2b87a2} .btn:active{transform:translateY(1px)}
+  .btn:disabled{background:#c3d8df;cursor:default}
+  .err{color:var(--danger); font-size:12px; min-height:18px; margin-top:10px; letter-spacing:.04em}
+  .hint2{font-size:11px;color:var(--muted);line-height:1.7;margin:-9px 0 15px 2px}
+  .sep2{height:1px;background:var(--line);margin:20px 0 18px}
+  .btn.ghost{background:transparent;color:var(--accent-deep);border:1px solid var(--line);margin-top:10px}
+  .btn.ghost:hover{background:#f3fafc}
+  .card.tall{max-width:380px;max-height:88vh;overflow-y:auto}
+
+  /* ---------------- 应用 ---------------- */
+  .app{width:100%;max-width:760px;height:100vh;display:flex;flex-direction:column;padding:0 20px}
+  header{display:flex;align-items:center;gap:10px;padding:20px 4px 13px;border-bottom:1px solid var(--line)}
+  .title{font-size:14px;letter-spacing:.22em}
+  .title b{font-weight:600;letter-spacing:.22em}
+  .spacer{margin-left:auto;display:flex;align-items:center;gap:12px}
+  .who{font-size:11px;color:var(--ink-soft);letter-spacing:.08em}
+  .chip{font-size:10px;letter-spacing:.12em;padding:2px 8px;border-radius:20px;
+        background:#eaf6fa;color:var(--accent-deep);border:1px solid #d3ebf3}
+  .chip.admin{background:#f3f7e9;color:#6b8a3a;border-color:#e0ecd0}
+  .link{font-size:11px;color:var(--muted);cursor:pointer;letter-spacing:.1em;background:none;border:none;font:inherit}
+  .link:hover{color:var(--accent-deep)}
+
+  main{flex:1;overflow-y:auto;padding:26px 4px 10px}
+  main::-webkit-scrollbar{width:6px}
+  main::-webkit-scrollbar-thumb{background:#d5e6ec;border-radius:3px}
+  .row{display:flex;margin:0 0 18px} .row.me{justify-content:flex-end}
+  .bubble{max-width:78%;padding:12px 16px;border-radius:14px;white-space:pre-wrap;word-break:break-word;
+    background:var(--bubble);border:1px solid var(--line);
+    box-shadow:0 1px 2px rgba(32,49,58,.03),0 8px 24px -18px rgba(32,49,58,.25)}
+  .row.me .bubble{background:var(--mine);border-color:#cfe9f1;box-shadow:none}
+  /* 气泡里的图/视频 */
+  .bubble.has-pic{padding:8px}
+  .bubble-img{display:block;max-width:100%;max-height:320px;border-radius:10px;margin:2px 0}
+  .bubble-vid video{display:block;max-width:100%;max-height:320px;border-radius:10px}
+  .bubble-vid{width:180px;height:110px;border-radius:10px;background:#e8f2f6;color:var(--muted);
+    display:flex;align-items:center;justify-content:center;font-size:12px;letter-spacing:.1em;margin:2px 0}
+  .who-mini{font-size:10px;color:var(--muted);letter-spacing:.1em;margin:0 0 3px 4px}
+  .cursor{display:inline-block;width:6px;height:15px;background:var(--accent);
+          vertical-align:-2px;margin-left:2px;animation:blink 1s steps(1) infinite}
+  @keyframes blink{50%{opacity:0}}
+  .void{color:var(--muted);letter-spacing:.3em;text-align:center;margin-top:34vh;font-size:12px}
+
+  .composer{border-top:1px solid var(--line);padding:14px 0 16px;display:flex;flex-direction:column;gap:8px}
+      .composer .row{display:flex;gap:10px;align-items:flex-end}
+      #pick{width:46px;height:46px;border:1px solid var(--line);background:#fff;border-radius:12px;
+        color:var(--accent-deep);font-size:20px;line-height:1;cursor:pointer;flex:none}
+      #pick:hover{background:#f2fafc}
+      #thumbs{display:flex;gap:8px;flex-wrap:wrap}
+      #thumbs:empty{display:none}
+      #thumbs .t{position:relative;width:64px;height:64px;border-radius:10px;overflow:hidden;
+        border:1px solid var(--line)}
+      #thumbs .t img{width:100%;height:100%;object-fit:cover;display:block}
+      #thumbs .t.vid{display:flex;align-items:center;justify-content:center;background:#e6f2f6;color:#3d7f93;font-size:22px}
+      #thumbs .t b{position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;
+        background:rgba(0,0,0,.55);color:#fff;font-size:12px;line-height:18px;text-align:center;
+        cursor:pointer;font-weight:400}
+  textarea{flex:1;resize:none;border:1px solid var(--line);background:#fff;border-radius:12px;
+    padding:11px 14px;font:inherit;color:var(--ink);outline:none;min-height:46px;max-height:160px;
+    line-height:1.6;transition:border-color .18s,box-shadow .18s}
+  textarea::placeholder{color:#b6cbd3}
+  textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(92,191,216,.14)}
+  #send{border:none;background:var(--accent-deep);color:#fff;font:inherit;padding:0 18px;height:46px;
+    border-radius:12px;cursor:pointer;letter-spacing:.06em;transition:background .18s}
+  #send:hover{background:#2b87a2} #send:disabled{background:#c3d8df;cursor:default}
+  footer{font-size:11px;color:var(--muted);padding:0 4px 10px;letter-spacing:.06em;display:flex;gap:14px}
+
+  /* ---------------- 管理抽屉 ---------------- */
+  .drawer{position:fixed;top:0;right:0;width:340px;height:100vh;background:#fff;
+    border-left:1px solid var(--line);box-shadow:-20px 0 50px -40px rgba(32,49,58,.5);
+    padding:24px 22px;overflow-y:auto;transform:translateX(100%);transition:transform .25s;z-index:20}
+  .drawer.open{transform:none}
+  .drawer h3{font-size:12px;letter-spacing:.18em;color:var(--muted);font-weight:400;margin:0 0 14px}
+
+  .mrow{display:flex;align-items:center;justify-content:space-between;
+    padding:13px 2px;border-bottom:1px solid #eff6f8;cursor:pointer;font-size:14px}
+  .mrow:hover{color:var(--accent-deep)}
+  .mrow .chev{color:var(--muted);font-size:16px}
+  .sep{height:14px}
+
+  .top{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+  .back{border:none;background:none;color:var(--accent-deep);font:inherit;font-size:12px;
+    cursor:pointer;padding:0;letter-spacing:.08em}
+  .top h3{margin:0}
+
+  .urow{display:flex;align-items:center;gap:9px;padding:11px 2px;border-bottom:1px solid #eff6f8;
+    cursor:pointer;font-size:13px}
+  .urow:hover{background:#fafdfe}
+  .urow .uid{color:var(--muted);font-size:11px;width:36px}
+  .urow .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+  .kv{display:flex;gap:10px;padding:7px 0;border-bottom:1px solid #f2f8fa;font-size:13px}
+  .kv b{font-weight:400;color:var(--muted);font-size:11px;letter-spacing:.1em;width:56px;flex:none}
+  .acts{display:flex;flex-direction:column;gap:9px;margin-top:20px}
+  .mini{font-size:12px;padding:9px 12px;border-radius:10px;border:1px solid var(--line);
+    background:#fbfdfe;color:var(--ink-soft);cursor:pointer;letter-spacing:.06em;text-align:left}
+  .mini:hover{border-color:var(--accent);color:var(--accent-deep)}
+  .mini.danger{color:var(--danger)}
+  .mini.danger:hover{border-color:var(--danger);color:var(--danger);background:#fdf6f5}
+  .hint{font-size:11px;color:var(--muted);line-height:1.9;margin-top:18px}
+  code{background:#f4fafc;padding:1px 5px;border-radius:4px;font-size:10px}
+</style>
+</head>
+<body>
+
+<!-- ================= 首次配置 ================= -->
+<div class="login-wrap hidden" id="setup">
+  <div class="card tall">
+    <div class="brand"><span class="dot"></span><b>AI 伴侣</b><span>初始化</span></div>
+
+    <label>DeepSeek API Key</label>
+    <input type="password" id="sKey" placeholder="sk-..." autocomplete="off">
+    <div class="hint2">去 platform.deepseek.com 的「API keys」里建一个。只存在本机 config.json。</div>
+
+    <label>服务商</label>
+    <select id="sProvider">
+      <option value="deepseek">DeepSeek</option>
+    </select>
+
+    <label>模型</label>
+    <select id="sModel"></select>
+    <div class="hint2" id="sModelTip"></div>
+    <input type="hidden" id="sBase" value="https://api.deepseek.com">
+
+    <div class="sep2"></div>
+    <label>QQ 机器人 AppID（可留空）</label>
+    <input type="text" id="sAppid" placeholder="你的AppID">
+    <label>QQ 机器人 Secret</label>
+    <input type="password" id="sSecret" placeholder="ClientSecret" autocomplete="off">
+    <label>机器人 token（服务器与 qqbot 共用，可留空＝只允许本机）</label>
+    <input type="text" id="sBot" placeholder="可留空">
+
+    <button class="btn" id="setupSave">保存并进入</button>
+    <button class="btn ghost" id="setupTest">先测一下 key</button>
+    <button class="btn ghost hidden" id="setupCancel">返回</button>
+    <div class="err" id="setupErr"></div>
+  </div>
+</div>
+
+<!-- ================= 登录 ================= -->
+<div class="login-wrap" id="login">
+  <div class="card">
+    <div class="brand"><span class="dot"></span><b>AI 伴侣</b><span>N-01</span></div>
+    <label>账号</label>
+    <input type="text" id="uid" placeholder="uid00" autocomplete="username" autofocus>
+    <label>密码</label>
+    <input type="password" id="pwd" placeholder="••••••" autocomplete="current-password">
+    <button class="btn" id="loginBtn">进入</button>
+    <div class="err" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- ================= 应用 ================= -->
+<div class="app hidden" id="app">
+  <header>
+    <span class="dot"></span>
+    <span class="title"><b>AI 伴侣</b></span>
+    <div class="spacer">
+      <span class="who" id="who"></span>
+      <span class="chip" id="roleChip">USER</span>
+      <button class="link" id="adminBtn" style="display:none">管理</button>
+      <button class="link" id="logoutBtn">退出</button>
+    </div>
+  </header>
+
+  <main id="log"><div class="void" id="void">…</div></main>
+
+  <div class="composer">
+    <div id="thumbs"></div>
+    <div class="row">
+      <button id="pick" class="icon" title="发图片">＋</button>
+      <textarea id="input" rows="1" placeholder="说点什么。"></textarea>
+      <button id="send">发送</button>
+    </div>
+    <input type="file" id="file" accept="image/*,video/*" multiple hidden>
+  </div>
+  <footer id="foot"><span id="f-turns">—</span></footer>
+</div>
+
+<!-- ================= 管理抽屉：三层 ================= -->
+<div class="drawer" id="drawer">
+
+  <!-- 一级：菜单 -->
+  <div class="dv" id="v-menu">
+    <h3>管理</h3>
+    <div class="mrow" data-go="list"><span>查看所有账号</span><span class="chev">›</span></div>
+    <div class="mrow" data-go="new"><span>新建账号</span><span class="chev">›</span></div>
+    <div class="mrow" data-go="self"><span>修改我的密码</span><span class="chev">›</span></div>
+    <div class="sep"></div>
+    <div class="mrow" data-go="setup"><span>接口与 QQ 机器人设置</span><span class="chev">›</span></div>
+    <p class="hint">只有管理员能看这个面板。</p>
+  </div>
+
+  <!-- 二级：账号列表 -->
+  <div class="dv hidden" id="v-list">
+    <div class="top"><button class="back" data-back>‹ 返回</button><h3>所有账号</h3></div>
+    <div id="userList"></div>
+  </div>
+
+  <!-- 三级：单个账号 -->
+  <div class="dv hidden" id="v-detail">
+    <div class="top"><button class="back" data-back>‹ 返回</button><h3>账号详情</h3></div>
+    <div id="detailBody"></div>
+    <div class="acts">
+      <button class="mini" id="dRelation">修改关系</button>
+      <button class="mini" id="dOpenid">绑定 / 修改 openid</button>
+      <button class="mini" id="dPasswd">修改这个账号的密码</button>
+      <button class="mini" id="dRole">设为管理员</button>
+      <button class="mini danger" id="dRemove">删除这个账号</button>
+    </div>
+    <div class="err" id="dErr"></div>
+  </div>
+
+  <!-- 新建账号 -->
+  <div class="dv hidden" id="v-new">
+    <div class="top"><button class="back" data-back>‹ 返回</button><h3>新建账号</h3></div>
+    <label>uid</label><input type="text" id="nUid" placeholder="比如 23">
+    <label>名字</label><input type="text" id="nName" placeholder="比如 同学A">
+    <label>和你的关系</label><input type="text" id="nRel" placeholder="同学 / 朋友 / 网友（可留空）">
+    <label>QQ 机器人 openid</label><input type="text" id="nOpenid" placeholder="官方 openid，不是 QQ 号（可留空）">
+    <label>角色</label>
+    <select id="nRole">
+      <option value="user">普通用户（只能聊天）</option>
+      <option value="admin">管理员（能管账号）</option>
+    </select>
+    <label>密码</label><input type="password" id="nPwd" placeholder="至少 4 位">
+    <button class="btn" id="nCreate">创建</button>
+    <div class="err" id="nErr"></div>
+  </div>
+
+  <!-- 改密码 -->
+  <div class="dv hidden" id="v-pass">
+    <div class="top"><button class="back" data-back>‹ 返回</button><h3 id="passTitle">修改密码</h3></div>
+    <label>新密码</label><input type="password" id="pPwd" placeholder="至少 4 位">
+    <label>再输一次</label><input type="password" id="pPwd2">
+    <button class="btn" id="pSave">保存</button>
+    <div class="err" id="pErr"></div>
+  </div>
+
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+let me = null, busy = false;
+let stack = [], sel = null, passTarget = null, usersCache = [];
+
+function esc(s){ return String(s ?? '').replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+const VIEWS = ['menu','list','detail','new','pass'];
+
+/* ---------------- 登录 ---------------- */
+async function login(){
+  const uid = $('uid').value.trim(), pwd = $('pwd').value;
+  if (!uid || !pwd) return;
+  $('loginBtn').disabled = true; $('loginErr').textContent = '';
+  try {
+    const r = await fetch('/api/login', {method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({uid, password: pwd})});
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error || '登录失败');
+    me = d; enter();
+  } catch(e){ $('loginErr').textContent = e.message; }
+  finally { $('loginBtn').disabled = false; }
+}
+
+function enter(){
+  $('login').classList.add('hidden');
+  $('app').classList.remove('hidden');
+  $('who').textContent = `${me.name} · uid${String(me.uid).padStart(2,'0')}`;
+  const chip = $('roleChip');
+  chip.textContent = me.role === 'admin' ? 'ADMIN' : 'USER';
+  chip.className = 'chip' + (me.role === 'admin' ? ' admin' : '');
+  $('adminBtn').style.display = me.role === 'admin' ? '' : 'none';
+  // 先把历史一次性铺好、再跳到底；期间不做动画（scroll-behavior 已改成默认），
+  // 否则会看到「先闪到最上面再滑下来」。
+  loadHistory().then(() => { jumpBottom(); refreshStats(); });
+  $('input').focus();
+}
+
+async function logout(){ await fetch('/api/logout', {method:'POST'}); location.reload(); }
+
+/* ---------------- 对话 ---------------- */
+function atBottom(){
+  const log = $('log');
+  return log.scrollHeight - log.scrollTop - log.clientHeight < 80;
+}
+function jumpBottom(){
+  const log = $('log');
+  log.scrollTop = log.scrollHeight;
+}
+
+// opts.stick：只有本来就在底部时才自动跟到底 —— 往上翻旧消息时不会被拽下来
+// opts.noScroll：批量插入（比如加载历史）时先不滚，最后统一跳一次
+function addRow(who, text, opts){
+  opts = opts || {};
+  const stick = opts.stick !== false;
+  const near = atBottom();
+  const v = $('void'); if (v && v.parentNode) v.remove();
+  const row = document.createElement('div');
+  row.className = 'row' + (who === 'me' ? ' me' : '');
+  const b = document.createElement('div'); b.className = 'bubble'; b.textContent = text || '';
+  row.appendChild(b); $('log').appendChild(row);
+  if (!opts.noScroll && stick && near) jumpBottom();
+  return b;
+}
+
+// 在气泡里放一张图（data URL 或 /media/... 都可以）
+function addPic(bubble, src){
+  bubble.classList.add('has-pic');
+  const img = document.createElement('img');
+  img.className = 'bubble-img'; img.src = src; img.loading = 'lazy';
+  bubble.appendChild(img);
+}
+
+// 视频先放一个占位块，点一下能播（有文件地址时）
+function addVid(bubble, src){
+  bubble.classList.add('has-pic');
+  const box = document.createElement('div');
+  box.className = 'bubble-vid';
+  if (src){
+    const v = document.createElement('video');
+    v.src = src; v.controls = true; v.preload = 'metadata';
+    box.appendChild(v);
+  } else {
+    box.textContent = '▶ 视频';
+  }
+  bubble.appendChild(box);
+}
+function setCursor(b, on){
+  const old = b.querySelector('.cursor'); if (old) old.remove();
+  if (on){ const c = document.createElement('span'); c.className='cursor'; b.appendChild(c); }
+}
+function autoGrow(){ const i=$('input'); i.style.height='auto'; i.style.height=Math.min(160,i.scrollHeight)+'px'; }
+
+/* ---------------- 图片 / 视频 ---------------- */
+let pics = [];            // 图片：[{data}]
+let vids = [];            // 视频：[{data, name}]，最多一个
+
+function renderThumbs(){
+  const box = $('thumbs');
+  box.innerHTML = '';
+  pics.forEach((p, i) => {
+    const d = document.createElement('div'); d.className = 't';
+    const img = document.createElement('img'); img.src = p.data;
+    const x = document.createElement('b'); x.textContent = '×';
+    x.onclick = () => { pics.splice(i,1); renderThumbs(); };
+    d.append(img, x); box.append(d);
+  });
+  vids.forEach((v, i) => {
+    const d = document.createElement('div'); d.className = 't vid';
+    d.innerHTML = '<span>▶</span>';
+    const x = document.createElement('b'); x.textContent = '×';
+    x.onclick = () => { vids.splice(i,1); renderThumbs(); };
+    d.append(x); box.append(d);
+  });
+}
+
+function addFiles(files){
+  for (const f of files){
+    if (f.type.startsWith('video/')){
+      if (vids.length >= 1) continue;
+      if (f.size > 1024*1024*1024) { alert('视频太大了（上限 1GB）'); continue; }
+      vids.push({file: f, name: f.name});   // 不读进内存，发送时才流式上传
+      renderThumbs();
+      continue;
+    }
+    if (!f.type.startsWith('image/')) continue;
+    if (pics.length >= 2) break;
+    if (f.size > 4*1024*1024) { alert('这张图太大了（上限 4MB）'); continue; }
+    const fr = new FileReader();
+    fr.onload = () => { if (pics.length < 2){ pics.push({data: fr.result}); renderThumbs(); } };
+    fr.readAsDataURL(f);
+  }
+}
+
+async function send(){
+  const text = $('input').value.trim();
+  const images = pics.map(p => p.data);
+  const pending = vids.slice();
+  if ((!text && !images.length && !pending.length) || busy) return;
+  busy = true; $('send').disabled = true; $('input').value=''; autoGrow();
+  pics = []; vids = []; renderThumbs();
+
+  // 先把图和视频画进自己的气泡 —— 之前只写一句「（图片）」，看不到东西
+  const meBubble = addRow('me', text || '');
+  if (!text) meBubble.classList.add('empty');
+  images.forEach(src => addPic(meBubble, src));
+  const localUrls = [];
+  pending.forEach(v => {
+    const u = URL.createObjectURL(v.file);
+    localUrls.push(u);
+    addVid(meBubble, u);
+  });
+  const bubble = addRow('bot', ''); setCursor(bubble, true);
+
+  try {
+    // 视频流式上传：浏览器直接把 File 作为 body 发，服务端边收边写盘
+    const videoPaths = [];
+    for (const v of pending){
+      bubble.textContent = '（上传视频…）'; bubble.classList.add('empty');
+      const up = await fetch('/api/upload', {method:'POST', body: v.file,
+        headers: {'X-Filename': v.name}});
+      const ud = await up.json().catch(() => ({}));
+      if (!up.ok || !ud.path){ bubble.textContent = '［上传失败］' + (ud.error || up.status); setCursor(bubble, false); return; }
+      videoPaths.push(ud.path);
+      bubble.classList.remove('empty'); bubble.textContent = '';
+    }
+
+    const res = await fetch('/api/chat', {method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({text, images, video_path: videoPaths})});
+    if (res.status === 401){ location.reload(); return; }
+    if (!res.body) throw new Error('HTTP '+res.status);
+
+    const reader = res.body.getReader(); const dec = new TextDecoder();
+    let buf='', acc='', toolUsed=false;
+    while (true){
+      const {done, value} = await reader.read(); if (done) break;
+      buf += dec.decode(value, {stream:true});
+      let i;
+      while ((i = buf.indexOf('\n\n')) >= 0){
+        const raw = buf.slice(0,i); buf = buf.slice(i+2);
+        if (!raw.startsWith('data: ')) continue;
+        const o = JSON.parse(raw.slice(6));
+        if (o.tool){
+          toolUsed = true;
+          if (!acc){ bubble.textContent = '（翻找记忆…）'; bubble.classList.add('empty'); }
+        }
+        if (o.t){
+          if (!acc && toolUsed) bubble.classList.remove('empty');
+          acc += o.t; bubble.textContent = acc; setCursor(bubble, true); $('log').scrollTop=$('log').scrollHeight;
+        }
+        if (o.error){ bubble.textContent = '［出错了］'+o.error; }
+      }
+    }
+    bubble.classList.remove('empty');
+    bubble.textContent = acc || '（没有回答）'; setCursor(bubble, false);
+  } catch(e){
+    bubble.textContent = '［连接失败］'+e.message; setCursor(bubble, false);
+  } finally {
+    busy = false; $('send').disabled = false; $('input').focus(); refreshStats();
+    // 本地 objectURL 用完就释放，不然一直占内存
+    localUrls.forEach(u => URL.revokeObjectURL(u));
+  }
+}
+
+async function loadHistory(){
+  try {
+    const r = await fetch('/api/history'); if (!r.ok) return;
+    const {turns} = await r.json();
+    if (!turns.length) return;
+    const v = $('void'); if (v) v.remove();
+    const log = $('log');
+    const wasNear = atBottom();
+    for (const t of turns){
+      const meB = addRow('me', t.user, {noScroll: true});
+      for (const m of (t.media || [])){
+        if (m.type === 'video') addVid(meB, null);       // 历史里只放占位，不自动加载视频
+        else addPic(meB, '/media/' + m.path.replace(/^data\/media\//, ''));
+      }
+      addRow('bot', t.reply, {noScroll: true});
+    }
+    // 一次性跳到底：以前每加一行都滚一次，看起来就是「先跳到最上再滑到最下」
+    log.scrollTop = log.scrollHeight;
+  } catch(e){}
+}
+
+async function refreshStats(){
+  try {
+    const r = await fetch('/api/stats'); if (!r.ok) return;
+    const s = await r.json();
+    $('f-turns').textContent = `对话 ${s.turns} 轮 · 想起 ${s.recalls} 次`;
+  } catch(e){}
+}
+
+/* ---------------- 抽屉导航 ---------------- */
+function show(name, push = true){
+  VIEWS.forEach(v => $('v-'+v).classList.toggle('hidden', v !== name));
+  if (push) stack.push(name); else stack = [name];
+}
+function back(){
+  stack.pop();
+  const prev = stack[stack.length-1] || 'menu';
+  show(prev, false);
+}
+function openDrawer(){ show('menu', false); $('drawer').classList.add('open'); }
+function closeDrawer(){ $('drawer').classList.remove('open'); }
+
+async function loadUsers(){
+  const r = await fetch('/api/admin/users');
+  if (!r.ok) return null;
+  const {users} = await r.json();
+  usersCache = users;
+  return users;
+}
+
+async function renderList(){
+  const users = await loadUsers(); if (!users) return;
+  $('userList').innerHTML = users.map(u => `
+    <div class="urow" data-uid="${esc(u.uid)}">
+      <span class="uid">${esc(String(u.uid).padStart(2,'0'))}</span>
+      <span class="nm">${esc(u.name || '')}${u.relation ? ' · ' + esc(u.relation) : ''}</span>
+      <span class="chip ${u.role==='admin'?'admin':''}">${u.role.toUpperCase()}</span>
+    </div>`).join('') || '<p class="hint">还没有账号。</p>';
+  $('userList').querySelectorAll('.urow').forEach(el => {
+    el.onclick = () => {
+      const u = usersCache.find(x => String(x.uid) === el.dataset.uid);
+      if (u) openDetail(u);
+    };
+  });
+  show('list');
+}
+
+function openDetail(u){
+  sel = u;
+  $('dErr').textContent = '';
+  $('detailBody').innerHTML = `
+    <div class="kv"><b>uid</b><span>${esc(String(u.uid).padStart(2,'0'))}</span></div>
+    <div class="kv"><b>名字</b><span>${esc(u.name || '—')}</span></div>
+    <div class="kv"><b>关系</b><span>${esc(u.relation || '—')}</span></div>
+    <div class="kv"><b>openid</b><span>${esc(u.openid || '—')}</span></div>
+    <div class="kv"><b>角色</b><span>${u.role === 'admin' ? '管理员' : '普通用户'}</span></div>
+    <div class="kv"><b>创建</b><span>${esc((u.created||'').replace('T',' ').slice(0,16))}</span></div>`;
+  $('dRole').textContent = u.role === 'admin' ? '取消管理员权限' : '设为管理员';
+  $('dRemove').style.display = String(u.uid) === String(me.uid) ? 'none' : '';
+  show('detail');
+}
+
+function openPass(target){
+  passTarget = target;
+  $('passTitle').textContent = target.self ? '修改我的密码' : `修改 uid${target.uid} 的密码`;
+  $('pPwd').value = ''; $('pPwd2').value = ''; $('pErr').textContent = '';
+  show('pass');
+}
+
+/* ---------------- 动作 ---------------- */
+async function createUser(){
+  const uid = $('nUid').value.trim();
+  const name = $('nName').value.trim();
+  const relation = $('nRel').value.trim();
+  const openid = $('nOpenid').value.trim();
+  const role = $('nRole').value;
+  const pwd = $('nPwd').value;
+  $('nErr').textContent = '';
+  if (!uid) return $('nErr').textContent = 'uid 不能为空';
+  if (pwd.length < 4) return $('nErr').textContent = '密码至少 4 位';
+  const r = await fetch('/api/admin/users/add', {method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({uid, name, role, relation, openid, password: pwd})});
+  const d = await r.json();
+  if (!r.ok) return $('nErr').textContent = d.error || '创建失败';
+  $('nUid').value = ''; $('nName').value = ''; $('nRel').value = ''; $('nOpenid').value = ''; $('nPwd').value = '';
+  await renderList();
+}
+
+async function savePassword(){
+  const p1 = $('pPwd').value, p2 = $('pPwd2').value;
+  $('pErr').textContent = '';
+  if (p1.length < 4) return $('pErr').textContent = '密码至少 4 位';
+  if (p1 !== p2) return $('pErr').textContent = '两次不一致';
+
+  const url = passTarget.self ? '/api/me/passwd' : '/api/admin/users/passwd';
+  const body = passTarget.self ? {password: p1} : {uid: passTarget.uid, password: p1};
+  const r = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(body)});
+  const d = await r.json();
+  if (!r.ok) return $('pErr').textContent = d.error || '保存失败';
+  $('pErr').style.color = 'var(--accent-deep)';
+  $('pErr').textContent = '已保存';
+  setTimeout(() => { $('pErr').textContent=''; $('pErr').style.color=''; back(); }, 800);
+}
+
+async function toggleRole(){
+  const role = sel.role === 'admin' ? 'user' : 'admin';
+  const r = await fetch('/api/admin/users/role', {method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({uid: sel.uid, role})});
+  const d = await r.json();
+  if (!r.ok) return $('dErr').textContent = d.error || '失败';
+  await renderList();
+  const u = usersCache.find(x => String(x.uid) === String(sel.uid));
+  if (u) openDetail(u);
+}
+
+async function editOpenid(){
+  const cur = sel.openid || '';
+  const openid = prompt(`uid${sel.uid} 的 QQ 机器人 openid（留空解除绑定）`, cur);
+  if (openid === null) return;
+  const r = await fetch('/api/admin/users/openid', {method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({uid: sel.uid, openid: openid.trim()})});
+  const d = await r.json();
+  if (!r.ok) return $('dErr').textContent = d.error || '保存失败';
+  await renderList();
+  const u = usersCache.find(x => String(x.uid) === String(sel.uid));
+  if (u) openDetail(u);
+}
+
+async function removeUser(){
+  if (!confirm(`确定删除 uid${sel.uid}？\n这个人会立刻掉线，聊天记录不会被删。`)) return;
+  const r = await fetch('/api/admin/users/remove', {method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({uid: sel.uid})});
+  const d = await r.json();
+  if (!r.ok) return $('dErr').textContent = d.error || '删除失败';
+  await renderList();
+}
+
+async function editRelation(){
+  const cur = sel.relation || '';
+  const rel = prompt(`uid${sel.uid} 和你的关系（同学 / 朋友 / 网友…）`, cur);
+  if (rel === null) return;
+  const r = await fetch('/api/admin/users/relation', {method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({uid: sel.uid, relation: rel.trim()})});
+  const d = await r.json();
+  if (!r.ok) return $('dErr').textContent = d.error || '保存失败';
+  await renderList();
+  const u = usersCache.find(x => String(x.uid) === String(sel.uid));
+  if (u) openDetail(u);
+}
+
+/* ---------------- 绑定 ---------------- */
+$('loginBtn').onclick = login;
+$('pwd').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
+$('uid').addEventListener('keydown', e => { if (e.key === 'Enter') $('pwd').focus(); });
+$('logoutBtn').onclick = logout;
+$('adminBtn').onclick = e => { e.stopPropagation(); openDrawer(); };
+$('send').onclick = send;
+$('pick').onclick = () => $('file').click();
+$('file').onchange = e => { addFiles(e.target.files); e.target.value = ''; };
+$('input').addEventListener('paste', e => {
+  const items = [...(e.clipboardData?.items || [])];
+  const files = items.filter(i => i.type.startsWith('image/')).map(i => i.getAsFile()).filter(Boolean);
+  if (files.length){ e.preventDefault(); addFiles(files); }
+});
+document.addEventListener('dragover', e => e.preventDefault());
+document.addEventListener('drop', e => {
+  e.preventDefault();
+  if (e.dataTransfer?.files?.length) addFiles(e.dataTransfer.files);
+});
+$('input').addEventListener('input', autoGrow);
+$('input').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey && !e.isComposing){ e.preventDefault(); send(); }
+});
+
+document.querySelectorAll('[data-go]').forEach(el => {
+  el.onclick = () => {
+    const go = el.dataset.go;
+    if (go === 'list') renderList();
+    else if (go === 'new') { $('nErr').textContent=''; show('new'); }
+    else if (go === 'self') openPass({uid: me.uid, self: true});
+    else if (go === 'setup') { closeDrawer(); openSetup(); }
+  };
+});
+document.querySelectorAll('[data-back]').forEach(el => el.onclick = back);
+$('nCreate').onclick = createUser;
+$('pSave').onclick = savePassword;
+$('dPasswd').onclick = () => openPass({uid: sel.uid, self: false});
+$('dRelation').onclick = editRelation;
+$('dOpenid').onclick = editOpenid;
+$('dRole').onclick = toggleRole;
+$('dRemove').onclick = removeUser;
+document.addEventListener('click', e => {
+  if (!e.target.closest('#drawer') && !e.target.closest('#adminBtn')) closeDrawer();
+});
+
+/* ---------------- 初始化配置 ---------------- */
+
+// 目前只有 DeepSeek。模型名都实测过能调通。
+const PROVIDERS = {
+  deepseek: {
+    label: 'DeepSeek',
+    base: 'https://api.deepseek.com',
+    models: [
+      { id: 'deepseek-chat',     tip: '默认。指向当前主力模型，稳定、便宜。' },
+      { id: 'deepseek-flash',    tip: '更快更便宜，适合日常聊天。' },
+      { id: 'deepseek-v4-pro',   tip: '更强也更贵，适合复杂问题。' },
+      { id: 'deepseek-reasoner', tip: '会先想再答，慢一些，回答更稳。' },
+    ],
+  },
+};
+
+function fillModels(providerId, current, baseUrl){
+  const p = PROVIDERS[providerId] || PROVIDERS.deepseek;
+  const sel = $('sModel');
+  sel.innerHTML = '';
+  const ids = p.models.map(m => m.id);
+  // 配置里是别的名字（比如以后自己改过）也保留，别静默换掉
+  if (current && !ids.includes(current)){
+    sel.insertAdjacentHTML('beforeend',
+      `<option value="${current}">${current}（当前配置）</option>`);
+  }
+  p.models.forEach(m => {
+    const o = document.createElement('option');
+    o.value = m.id; o.textContent = m.id;
+    o.dataset.tip = m.tip;
+    sel.appendChild(o);
+  });
+  sel.value = current && [...sel.options].some(o => o.value === current)
+    ? current : p.models[0].id;
+  $('sBase').value = baseUrl || p.base;
+  updateModelTip();
+}
+
+function updateModelTip(){
+  const sel = $('sModel');
+  const tip = sel.selectedOptions[0]?.dataset?.tip || '';
+  $('sModelTip').textContent = tip;
+}
+
+async function loadSetup(){
+  const r = await fetch('/api/setup');
+  if (!r.ok) return null;
+  return r.json();
+}
+
+async function openSetup(){
+  const s = await loadSetup();
+  if (s){
+    fillModels('deepseek', s.model, s.base_url);
+    $('sAppid').value = s.qq?.appid || '';
+    $('sBot').value   = s.qq?.bot_token || '';
+    $('sKey').value = '';
+    $('sSecret').value = '';
+    $('sKey').placeholder = s.has_key ? '已配置（留空＝不改）' : 'sk-...';
+    $('sSecret').placeholder = s.qq?.has_secret ? '已配置（留空＝不改）' : 'ClientSecret';
+    $('setupErr').textContent = '';
+  }
+  $('login').classList.add('hidden');
+  $('app').classList.add('hidden');
+  $('setup').classList.remove('hidden');
+  // 已登录的管理员从面板进来时可以返回；首次配置没有「返回」可去
+  $('setupCancel').classList.toggle('hidden', !(me && me.uid));
+  $('setupSave').textContent = (me && me.uid) ? '保存' : '保存并进入';
+}
+
+async function saveSetup(){
+  const body = {
+    api_key: $('sKey').value.trim(),
+    model: $('sModel').value,
+    base_url: $('sBase').value || PROVIDERS.deepseek.base,
+    appid: $('sAppid').value.trim(),
+  };
+  // 留空＝不改：只有真填了才覆盖，避免把已配好的 secret 清掉
+  if ($('sSecret').value.trim()) body.secret = $('sSecret').value.trim();
+  if ($('sBot').value.trim())    body.bot_token = $('sBot').value.trim();
+  if (!body.api_key) delete body.api_key;
+
+  $('setupSave').disabled = true;
+  $('setupErr').textContent = '保存中…';
+  try {
+    const r = await fetch('/api/setup', {method:'POST',
+      headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+    const d = await r.json();
+    if (!r.ok || d.error) throw new Error(d.error || '保存失败');
+    $('setupErr').textContent = '';
+    $('setup').classList.add('hidden');
+    if (me && me.uid){                     // 已登录的管理员：回到对话
+      $('app').classList.remove('hidden');
+      $('setupErr').textContent = '';
+    } else {
+      $('login').classList.remove('hidden');
+      $('loginErr').textContent = '配置好了，登录吧。';
+    }
+  } catch(e){
+    $('setupErr').textContent = netError(e);
+  } finally {
+    $('setupSave').disabled = false;
+  }
+}
+
+// fetch 在「服务没起来 / 窗口被关掉 / 端口不对」时抛 TypeError: Failed to fetch。
+// 这句话对用户毫无意义，翻成能照着做的提示。
+function netError(e){
+  if (e instanceof TypeError || /Failed to fetch|NetworkError|Load failed/i.test(e.message || '')){
+    return '连不上本地服务（127.0.0.1:8765）。'
+         + '那个黑色的服务窗口是不是关了？重新双击 启动.bat，等两秒再点这里。';
+  }
+  if (/abort/i.test(e.name)) return '请求超时了，网络慢或者 key 测试太久。再点一次。';
+  return e.message || String(e);
+}
+
+async function testSetup(){
+  const body = {api_key: $('sKey').value.trim(),
+                model: $('sModel').value,
+                base_url: $('sBase').value || PROVIDERS.deepseek.base};
+  if (!body.api_key) delete body.api_key;
+  $('setupErr').textContent = '测试中…（最多等 30 秒）';
+  try {
+    const r = await fetch('/api/setup/test', {method:'POST',
+      headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(d.error || `服务返回 ${r.status}`);
+    $('setupErr').textContent = d.ok ? `连通了，ta说：${d.reply || '（空）'}` : d.error;
+  } catch(e){
+    $('setupErr').textContent = netError(e);
+  }
+}
+
+$('setupSave').onclick = saveSetup;
+$('setupTest').onclick = testSetup;
+$('sModel').addEventListener('change', updateModelTip);
+$('setupCancel').onclick = () => {
+  $('setup').classList.add('hidden');
+  if (me && me.uid) $('app').classList.remove('hidden');
+  else $('login').classList.remove('hidden');
+};
+
+/* ---------------- 启动 ---------------- */
+(async function boot(){
+  try {
+    const s = await loadSetup();
+    if (s && s.needed){ openSetup(); return; }
+    const r = await fetch('/api/me');
+    if (!r.ok) return;
+    me = await r.json(); enter();
+  } catch(e){}
+})();
+</script>
+</body>
+</html>
