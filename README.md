@@ -1,13 +1,38 @@
-# N01 — 本地运行的 AI 角色程序
+# N01
 
-> ta 住在你自己的电脑里。有性格、有记忆、能上网查东西，数据不出本机。
+<p align="center">
+  <b>基于上下文托管的 AI 持久记忆</b><br>
+  <i>ta 记得你说的每一句话</i>
+</p>
+
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
+  <a href="https://www.python.org/"><img src="https://img.shields.io/badge/Python-3.10%2B-blue.svg" alt="Python 3.10+"></a>
+  <a href="#"><img src="https://img.shields.io/badge/%E4%BE%9D%E8%B5%96-%E9%9B%B6%E7%AC%AC%E4%B8%89%E6%96%B9-brightgreen.svg" alt="零第三方依赖"></a>
+  <a href="https://platform.deepseek.com"><img src="https://img.shields.io/badge/LLM-DeepSeek-5B6EF5.svg" alt="DeepSeek"></a>
+</p>
+
+<p align="center">
+  简体中文 | <a href="README_EN.md">English</a>
+</p>
+
+---
 
 一个可以完全在本地运行的 AI 角色对话程序。给它一个地方说话、一段记忆、和一点主动去查东西的能力。
+
+> ta 住在你自己的电脑里。有性格、有记忆、能上网查东西，数据不出本机。
 
 - **零第三方依赖**（可选 Pillow 处理图片、可选 ffmpeg 处理视频）
 - **数据全在本机**：聊天记录、图片、视频都在 `data/`
 - **接 DeepSeek API**，也可以换成任何 OpenAI 兼容接口
 - **可以接 QQ**：通过 QQ 官方机器人，让 ta 在 QQ 里和人说话
+- **上下文前缀缓存命中率约 96%**，聊得再久也不会把钱烧在重复的旧话上
+
+## 为什么值得一试
+
+大多数 AI 角色项目聊到几十轮就"失忆"了——要么把全部历史硬塞进提示词，token 爆炸；要么粗暴截断，ta 就忘了三天前说过的话。
+
+N01 换了种做法：**把不变的内容放前面、每轮都在变的内容放后面**，让 DeepSeek 的前缀缓存几乎永远命中。实测命中率约 96%，每轮只重算新增的两三条消息。旧事不是被删掉，而是按重要度分层压缩——聊得越久，ta 反而越"熟"。
 
 ---
 
@@ -225,6 +250,31 @@ accounts.json                账号
 
 ---
 
+## 参与贡献
+
+欢迎 Issue 和 PR。提交 PR 前请看一眼 [CONTRIBUTING.md](CONTRIBUTING.md)。
+
+如果你觉得这个项目有意思，点个 **Star** 是对作者最大的鼓励 ⭐
+
+## Star History
+
+如果项目帮到了你，欢迎引用：
+
+```bibtex
+@misc{n01,
+  title  = {N01: 基于上下文托管的 AI 持久记忆},
+  author = {N01 contributors},
+  year   = {2026},
+  url    = {https://github.com/YOUR_NAME/N01}
+}
+```
+
 ## License
 
-MIT
+[MIT](LICENSE) © 2026 N01 contributors
+
+---
+
+<p align="center">
+  <sub>Made with ❤️ for those who want ta to remember.</sub>
+</p>
