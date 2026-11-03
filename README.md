@@ -248,14 +248,26 @@ accounts.json                账号
 - 没有语音（可以自己接 ASR/TTS）
 - 记忆靠字数堆，角色聊久了人设会被稀释
 
+## 隐私边界（重要，请先读）
+
+ta 会记住每个人说过的话，并会在不同人之间**转述**。请务必理解：
+
+- 「别把 A 的事告诉 B」这类规则**只是提示词约束**，模型可能不遵守，**挡不住有意问询**。
+- 所以：**别对 ta 说真正的隐私**——住址、证件号、密码、银行信息、他人的私事。
+- 如果你给朋友开了账号，请默认假设**你写过的内容有概率被 ta 说出来**。
+- 管理员在网页里能看到所有用户的记录。
+- 多人共用同一个管理员账号时，彼此的记忆也会混在一起。
+
+这套设计的目的是**让 ta 记住你**，不是做隐私隔离。请把它当成一个会聊天的朋友，而不是保险柜。
+
 ---
 
 ## 制作人
 
 | 角色 | 名字 |
 | --- | --- |
-| 开发 | [@YOUR_NAME](https://github.com/YOUR_NAME) |
-| 共同开发 | [@同学的GitHub用户名](https://github.com/同学的GitHub用户名) |
+| 开发 | [@inhakuken123](https://github.com/inhakuken123) |
+| 共同开发 | [@SunChunnie](https://github.com/SunChunnie) |
 
 ## 参与贡献
 
@@ -272,7 +284,7 @@ accounts.json                账号
   title  = {N01: 基于上下文托管的 AI 持久记忆},
   author = {N01 contributors},
   year   = {2026},
-  url    = {https://github.com/YOUR_NAME/N01}
+  url    = {https://github.com/inhakuken123/N01}
 }
 ```
 

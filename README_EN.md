@@ -226,12 +226,24 @@ accounts.json                Accounts
 - No voice (wire up your own ASR/TTS)
 - Memory is character-based, so the persona dilutes over long conversations
 
+## Privacy boundaries (important)
+
+ta remembers what everyone said and will **relay things between people**:
+
+- Rules like "don't tell B about A" are **prompt instructions only**. The model may ignore them; they won't survive deliberate questioning.
+- So **never tell ta real secrets**: addresses, ID numbers, passwords, banking details, other people's private matters.
+- If you give friends accounts, assume **anything you wrote may be repeated**.
+- The admin can see every user's records in the web UI.
+- When several people share one admin account, their memories blend together.
+
+This design is meant to **make ta remember you**, not to isolate privacy. Treat ta as a friend who talks, not as a safe.
+
 ## Credits
 
 | Role | Name |
 | --- | --- |
-| Developer | [@YOUR_NAME](https://github.com/YOUR_NAME) |
-| Co-developer | [@YOUR_CLASSMATE](https://github.com/YOUR_CLASSMATE) |
+| Developer | [@inhakuken123](https://github.com/inhakuken123) |
+| Co-developer | [@SunChunnie](https://github.com/SunChunnie) |
 
 ## Contributing
 
